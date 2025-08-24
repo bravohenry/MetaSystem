@@ -1,0 +1,46 @@
+# IDE和编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+.tmp/
+
+# Claude Desktop相关（保留settings.local.json作为示例）
+# .claude/settings.local.json
+
+# 用户生成的系统（可选择性提交）
+# 可以根据需要取消注释以下行来排除用户生成的系统
+# */
+# !Reference/
+# !CLAUDE.md
+# !README.md
+
+# Node modules（如果有）
+node_modules/
+
+# Python相关（如果有）
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# 备份文件
+*.bak
+*.backup
