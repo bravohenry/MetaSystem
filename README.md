@@ -23,7 +23,7 @@ Bravo MetaSystem/
 ├── CLAUDE.md                    # 元系统核心 - 智能系统架构师
 ├── Reference/                   # 蓝图模板系统
 │   ├── CLAUDE.md               # 协调者通用模板
-│   └── .claude/prompts/
+│   └── .claude/agents/
 │       ├── agent_template.md   # Agent通用结构模板
 │       └── role_configs.yaml   # 职位配置参数库
 └── [用户生成的系统]/            # 动态创建的AI团队系统
@@ -135,7 +135,7 @@ claude mcp add github @modelcontextprotocol/server-github
 
 ### 🎭 智能模板系统
 
-- **通用模板**: 基于 `Reference/.claude/prompts/agent_template.md` 的高质量结构
+- **通用模板**: 基于 `Reference/.claude/agents/agent_template.md` 的高质量结构
 - **配置驱动**: `role_configs.yaml` 配置库支持快速角色生成
 - **动态填充**: 智能参数匹配和个性化定制
 - **一致性保证**: 确保所有Agent都达到专业标准
@@ -167,9 +167,9 @@ claude mcp add github @modelcontextprotocol/server-github
 
 #### 文件引用机制
 ```bash
-# 精确引用Agent提示词
-@Reference/.claude/prompts/agent_template.md
-@炼金流量/.claude/prompts/analytics-insights.md
+# 精确引用Agent配置
+@Reference/.claude/agents/agent_template.md
+@炼金流量/.claude/agents/analytics-insights.md
 
 # 智能文件发现
 系统自动扫描并发现所有可用的AI团队
@@ -212,7 +212,7 @@ claude mcp add github @modelcontextprotocol/server-github
 
 ### 添加新职位类型
 
-1. 在`Reference/.claude/prompts/role_configs.yaml`中添加新职位配置
+1. 在`Reference/.claude/agents/role_configs.yaml`中添加新职位配置
 2. 定义专业技能、人格特质和工作流程
 3. 系统自动支持新职位的团队创建
 
@@ -240,7 +240,7 @@ claude mcp add github @modelcontextprotocol/server-github
 
 - [系统架构设计](./CLAUDE.md)
 - [协调者模板](./Reference/CLAUDE.md)
-- [Agent模板系统](./Reference/.claude/prompts/)
+- [Agent模板系统](./Reference/.claude/agents/)
 
 ## 🤝 贡献
 

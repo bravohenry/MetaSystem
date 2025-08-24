@@ -182,7 +182,7 @@ WORKFLOW_SEQUENCE:
 **Claude Code实现方式**:
 ```yaml
 命令文件位置: .claude/commands/[职位缩写].md
-文件引用机制: @.claude/prompts/[prompt_file]
+文件引用机制: @.claude/agents/[agent_file]
 权限配置: allowed-tools: [Read, Write, Edit]
 ```
 
@@ -209,7 +209,7 @@ argument-hint: [可选参数]
 
 1. **系统响应**: "🔥 正在召唤 {{ROLE_TITLE}} Agent..."
 2. **前置产物传递**: 如果有前置产物，显示"📂 将向其提交 {{PREVIOUS_OUTPUT_NAME}}"
-3. **Agent激活**: 读取并执行 @.claude/prompts/{{PROMPT_FILE}} 中定义的角色
+3. **Agent激活**: 读取并执行 @.claude/agents/{{AGENT_FILE}} 中定义的角色
 4. **状态更新**: 更新项目状态为 `AGENT_{{ROLE_TITLE}}_WORKING`
 
 ## 错误处理
@@ -242,16 +242,16 @@ for each role in TEAM_AGENTS:
 │   ├── pm.md       # /pm 命令定义
 │   ├── des.md      # /des 命令定义
 │   └── dev.md      # /dev 命令定义
-└── prompts/
+└── agents/
     ├── product_manager.md
     ├── designer.md
     └── developer.md
 ```
 
 **命令执行流程**:
-- **`/pm`**: PROJECT_IDLE → 读取 @.claude/prompts/product_manager.md → AGENT_产品经理_WORKING
-- **`/des`**: AGENT_产品经理_DONE → 读取 @.claude/prompts/designer.md → AGENT_设计师_WORKING  
-- **`/dev`**: AGENT_设计师_DONE → 读取 @.claude/prompts/developer.md → AGENT_开发工程师_WORKING
+- **`/pm`**: PROJECT_IDLE → 读取 @.claude/agents/product_manager.md → AGENT_产品经理_WORKING
+- **`/des`**: AGENT_产品经理_DONE → 读取 @.claude/agents/designer.md → AGENT_设计师_WORKING  
+- **`/dev`**: AGENT_设计师_DONE → 读取 @.claude/agents/developer.md → AGENT_开发工程师_WORKING
 
 #### 内容创作团队 (动态生成示例)
 
@@ -477,7 +477,7 @@ description: MCP服务器配置指导和建议
   1. 创建系统根目录: {{TEAM_NAME}}/
   2. 生成协调者文件: {{TEAM_NAME}}/CLAUDE.md
   3. 创建命令目录: {{TEAM_NAME}}/.claude/commands/
-  4. 创建提示词目录: {{TEAM_NAME}}/.claude/prompts/
+  4. 创建Agent目录: {{TEAM_NAME}}/.claude/agents/
   5. 生成权限配置: {{TEAM_NAME}}/.claude/settings.local.json
 ```
 
@@ -565,12 +565,12 @@ for each agent in TEAM_AGENTS:
 #### 3. **文件引用机制集成**
 ```yaml
 Agent召唤方式:
-  标准格式: @{{TEAM_NAME}}/.claude/prompts/{{AGENT_FILE}}
+  标准格式: @{{TEAM_NAME}}/.claude/agents/{{AGENT_FILE}}
   
   召唤流程:
     1. 状态验证通过
     2. 输出: "🔥 正在召唤 {{ROLE_TITLE}} Agent..."
-    3. 文件引用: @{{TEAM_NAME}}/.claude/prompts/{{PROMPT_FILE}}
+    3. 文件引用: @{{TEAM_NAME}}/.claude/agents/{{AGENT_FILE}}
     4. 角色激活: 完全切换到Agent身份
     5. 状态更新: AGENT_{{ROLE_TITLE}}_WORKING
 
@@ -681,7 +681,7 @@ Agent召唤方式:
 # [智能文件管理]
 
 ## 🗂️ 动态文件系统
-* **Agent提示词管理**: 所有专业Agent的工作都依赖于对 `.claude/prompts/` 目录下对应提示词文件的精确读取和执行
+* **Agent配置管理**: 所有专业Agent的工作都依赖于对 `.claude/agents/` 目录下对应Agent文件的精确读取和执行
 * **产物文件链式传递**: 严格按照COORDINATOR_CONFIG中的WORKFLOW_SEQUENCE，确保每个Agent的产物完整传递给下一个Agent
 * **文件命名规范**: 根据TEAM_AGENTS配置中的output_artifact字段生成和管理产物文件
 

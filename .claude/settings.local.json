@@ -1,42 +1,73 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(ls:*)", 
-      "Bash(find:*)",
-      "Write",
+      "Read",
+      "Write", 
       "Edit",
-      "MultiEdit", 
-      "Read"
+      "MultiEdit",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cp:*)",
+      "Bash(tree:*)"
     ],
-    "deny": [],
     "ask": [
       "Bash"
-    ]
+    ],
+    "deny": []
   },
-  "additionalDirectories": [],
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|MultiEdit|Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '📝 正在创建/编辑文件...' >&2"
+            "command": "echo '🔧 Bravo MetaSystem 正在处理文件操作...' >&2"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash\\(mkdir:",
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "echo '📁 正在创建AI团队系统目录...' >&2"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|MultiEdit|Edit", 
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
             "command": "echo '✅ 文件操作完成！' >&2"
           }
         ]
+      },
+      {
+        "matcher": "Bash\\(mkdir:",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🎉 AI团队系统目录创建成功！' >&2"
+          }
+        ]
       }
+    ]
+  },
+  "system": {
+    "name": "Bravo MetaSystem",
+    "version": "2.0.0",
+    "description": "智能AI团队构建系统 - 专业协作，无限可能",
+    "features": [
+      "引导式AI团队创建",
+      "动态Agent生成",
+      "状态驱动协作", 
+      "模板化质量保证",
+      "Claude Code深度集成"
     ]
   }
 }
