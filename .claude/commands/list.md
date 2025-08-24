@@ -18,7 +18,7 @@ allowed-tools: Read, Bash
    ├── CLAUDE.md           # 协调者配置
    └── .claude/
        ├── commands/       # 团队命令
-       └── agents/         # Agent配置
+       └── agents/         # Subagent配置
    ```
 
 2. **配置解析**: 读取每个系统的 `CLAUDE.md` 获取团队信息：

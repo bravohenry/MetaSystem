@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Edit, MultiEdit, Bash
 - 团队根目录和系统文件结构
 - 协调者CLAUDE.md（定制化团队管理逻辑）
 - .claude/commands/目录（职位专用斜杠命令）
-- .claude/agents/目录（专业Agent配置）
+- .claude/agents/目录（专业Subagent配置）
 - 权限配置和Hook机制
 
 ## 使用示例
@@ -46,7 +46,7 @@ allowed-tools: Read, Write, Edit, MultiEdit, Bash
 
 ## 预期输出
 - 完整的AI团队系统目录
-- 可直接使用的专业Agent
+- 可直接使用的专业Subagent
 - 结构化的工作流程
 - Claude Code完整集成
 

@@ -11,7 +11,7 @@ allowed-tools: Read
 **Bravo MetaSystem** 是一个智能的AI团队构建引擎，能够为任何领域、任何需求构建定制化的专业AI协作团队。
 
 ### ✨ 核心特色
-- **🎭 智能角色生成**: 基于通用模板为任意职位生成专业AI Agent
+- **🎭 智能角色生成**: 基于通用模板为任意职位生成专业AI Subagent
 - **🔄 动态团队配置**: 支持产品开发、内容创作、市场营销等多领域组合
 - **📋 引导式构建**: 通过5步对话流程轻松创建专属AI团队
 - **🎯 状态驱动协作**: 严格的状态管理确保团队协作有序性
@@ -66,16 +66,16 @@ allowed-tools: Read
 PROJECT_IDLE → AGENT_[职位]_WORKING → AGENT_[职位]_DONE → ...
 ```
 
-### 🤖 Agent召唤机制
-- 使用职位命令召唤专业Agent（如 `/pm` 召唤产品经理）
+### 🤖 Subagent委托机制
+- 使用职位命令委托专业Subagent（如 `/pm` 委托产品经理）
 - 系统自动验证前置条件和工作状态
-- Agent完成工作后自动生成产物文件
+- Subagent完成工作后自动生成产物文件
 - 无缝交接到下一个工作阶段
 
 ### 📄 产物管理
-- 每个Agent产出标准化的工作产物
+- 每个Subagent产出标准化的工作产物
 - 产物自动保存为文件，支持版本管理
-- 下一阶段Agent自动读取前置产物
+- 下一阶段Subagent自动读取前置产物
 - 完整的工作追踪和质量保证
 
 ## 🎭 预设团队模板
@@ -121,21 +121,21 @@ Bravo MetaSystem/
 ├── Reference/                   # 蓝图模板系统
 │   ├── CLAUDE.md               # 协调者模板
 │   └── .claude/agents/
-│       ├── agent_template.md   # Agent通用模板
+│       ├── agent_template.md   # Subagent通用模板
 │       └── role_configs.yaml   # 职位配置库
 ├── .claude/commands/            # 元系统命令
 └── [用户生成系统]/              # 动态创建的团队
     ├── CLAUDE.md               # 团队协调者
     └── .claude/
         ├── commands/           # 团队专用命令
-        └── agents/             # 专业Agent定义
+        └── agents/             # 专业Subagent定义
 ```
 
 ### 🎯 设计原理
-- **职位优先，角色靠后**: 用户定义需求，系统智能生成Agent
+- **职位优先，角色靠后**: 用户定义需求，系统智能生成Subagent
 - **模板驱动质量**: 统一模板确保专业水准
 - **状态驱动协作**: 严格状态管理保证流程有序
-- **产物链接传递**: 标准化文档实现Agent异步协作
+- **产物链接传递**: 标准化文档实现Subagent异步协作
 
 ## 💡 最佳实践
 
@@ -148,7 +148,7 @@ Bravo MetaSystem/
 ### 🚀 高效使用技巧
 - 定期使用 `/list` 管理团队系统
 - 保持产物文件的组织性
-- 充分利用Agent的专业建议
+- 充分利用Subagent的专业建议
 - 适时使用修改和迭代功能
 
 ### 🛡️ 质量保证
