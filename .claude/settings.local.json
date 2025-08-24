@@ -1,9 +1,42 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(ls:*)", 
+      "Bash(find:*)",
+      "Write",
+      "Edit",
+      "MultiEdit", 
+      "Read"
     ],
     "deny": [],
-    "ask": []
+    "ask": [
+      "Bash"
+    ]
+  },
+  "additionalDirectories": [],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|MultiEdit|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📝 正在创建/编辑文件...' >&2"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|MultiEdit|Edit", 
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ 文件操作完成！' >&2"
+          }
+        ]
+      }
+    ]
   }
 }

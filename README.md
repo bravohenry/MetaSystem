@@ -38,10 +38,22 @@ Bravo MetaSystem/
 
 ## 🚀 快速开始
 
-### 1. 基本使用
+### 1. 环境准备
+
+确保你已安装并配置了 [Claude Code](https://docs.anthropic.com/claude/docs/claude-code)：
 
 ```bash
-# 启动元系统
+# 检查Claude Code安装
+claude --version
+
+# 在项目目录启动Claude Code
+claude
+```
+
+### 2. 基本使用
+
+#### 🎯 创建你的第一个AI团队
+```bash
 /create
 ```
 
@@ -52,19 +64,57 @@ Bravo MetaSystem/
 4. **系统确认** - 确认团队配置和工作流程
 5. **完成创建** - 获得可直接使用的AI团队系统
 
-### 2. 运行AI团队
-
+#### 🎭 运行AI团队
 ```bash
 # 运行创建的系统
 /run [系统名称]
+
+# 示例：运行SEO优化团队
+/run 炼金流量
 ```
 
-### 3. 系统管理
-
+#### 📋 系统管理
 ```bash
 /list     # 查看所有已创建的系统
-/help     # 获取使用帮助
+/help     # 获取详细使用帮助
 ```
+
+### 3. 体验示例
+
+#### 🔥 立即体验：SEO优化团队
+```bash
+/run 炼金流量
+```
+
+这将启动一个完整的5人SEO专家团队：
+- 🔍 **分析洞察师** - 数据挖掘与竞争分析
+- 📝 **内容重塑专家** - 多渠道内容优化
+- 🧪 **A/B测试编排师** - 精准测试设计
+- 💰 **SEO转化优化师** - 流量转化提升
+- 🚀 **SEO收入优化师** - 直接对接商业结果
+
+### 4. 高级配置
+
+#### 🔧 MCP服务器增强
+为了最大化AI团队的能力，推荐配置以下MCP服务器：
+
+```bash
+# 文件系统操作能力
+claude mcp add filesystem @modelcontextprotocol/server-filesystem
+
+# 网络搜索能力
+claude mcp add brave-search @modelcontextprotocol/server-brave-search
+
+# GitHub集成能力 
+claude mcp add github @modelcontextprotocol/server-github
+```
+
+#### ⚙️ 权限配置
+系统已预配置最佳权限设置，支持：
+- ✅ 文件读写操作
+- ✅ 目录创建和管理
+- ✅ Hook钩子反馈
+- ✅ 安全的Bash操作
 
 ## 🎯 支持的团队类型
 
@@ -83,33 +133,59 @@ Bravo MetaSystem/
 
 ## 🔧 技术特性
 
-### 智能模板系统
+### 🎭 智能模板系统
 
-- **通用模板**: 一套高质量结构适应所有职位
-- **配置驱动**: YAML配置库支持快速角色生成
+- **通用模板**: 基于 `Reference/.claude/prompts/agent_template.md` 的高质量结构
+- **配置驱动**: `role_configs.yaml` 配置库支持快速角色生成
 - **动态填充**: 智能参数匹配和个性化定制
+- **一致性保证**: 确保所有Agent都达到专业标准
 
-### 状态管理系统
+### 📊 状态管理系统
 
 - **项目状态**: PROJECT_IDLE → AGENT_[职位]_WORKING → AGENT_[职位]_DONE
 - **内部状态**: 每个Agent具备完整的内部状态机
 - **流程控制**: 严格的前置条件检查和状态验证
+- **错误恢复**: 优雅的异常处理和状态回退
 
-### 指令系统
+### 🔧 Claude Code集成
 
+#### 官方斜杠命令支持
 ```bash
-# 通用管理指令
-/edit     # 智能修改模式
-/status   # 项目状态报告
-/help     # 动态帮助系统
-/mcp      # MCP服务器配置
+# 元系统管理指令
+/create   # 启动引导式创建流程
+/run      # 运行指定AI团队系统
+/list     # 查看所有可用系统
+/help     # 获取使用帮助
 
-# 职位指令（动态生成）
-/pm       # Product Manager
-/des      # Designer  
-/dev      # Developer
-/mkt      # Marketing Strategist
-# ...更多根据团队配置动态生成
+# 动态职位指令（运行时生成）
+/ai       # 分析洞察师 (炼金流量团队)
+/content  # 内容重塑专家
+/test     # A/B测试编排师
+/convert  # SEO转化优化师
+/revenue  # SEO收入优化师
+```
+
+#### 文件引用机制
+```bash
+# 精确引用Agent提示词
+@Reference/.claude/prompts/agent_template.md
+@炼金流量/.claude/prompts/analytics-insights.md
+
+# 智能文件发现
+系统自动扫描并发现所有可用的AI团队
+```
+
+#### 权限与安全
+```json
+{
+  "permissions": {
+    "allow": ["Write", "Edit", "MultiEdit", "Read"],
+    "hooks": {
+      "PreToolUse": ["文件操作提示"],
+      "PostToolUse": ["操作完成确认"]
+    }
+  }
+}
 ```
 
 ## 📚 使用示例

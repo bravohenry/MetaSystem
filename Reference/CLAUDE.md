@@ -172,106 +172,423 @@ WORKFLOW_SEQUENCE:
 
 ## 🔧 动态指令生成框架
 
-指令系统会根据COORDINATOR_CONFIG中的TEAM_AGENTS配置自动生成。每个职位都会有对应的指令。
+指令系统完全基于Claude Code官方斜杠命令机制，根据COORDINATOR_CONFIG中的TEAM_AGENTS配置自动生成。
 
-### 📋 通用指令模板
+### 📋 Claude Code官方命令集成
 
 #### 🎯 职位调用指令模式
 **指令格式**: `/[职位缩写]` (如：`/pm`, `/des`, `/dev`, `/mkt`)
 
-**通用执行逻辑**:
+**Claude Code实现方式**:
 ```yaml
-适用状态判断:
-  - 如果是第一个职位: PROJECT_IDLE 或 PROJECT_REVISING
-  - 如果是后续职位: 前一个职位的 AGENT_[前置职位]_DONE 状态
-
-执行流程:
-  1. 状态验证: 检查当前状态是否允许该职位开始工作
-  2. 前置检查: 验证前置职位的产物文件是否存在（如果不是第一个职位）
-  3. Agent召唤: 
-     - 系统响应："🔥 正在召唤 [职位名称] Agent..."
-     - 如果有前置产物："📂 将向其提交 [前置产物名称]"
-  4. 工作启动: 读取对应的 `.claude/prompts/[prompt_file]` 文件，执行初始化
-  5. 状态更新: 更新为 `AGENT_[职位名称]_WORKING`
-
-错误处理:
-  - 状态不匹配: "❌ 错误：当前阶段不能启动[职位名称]工作。请先完成前置步骤。"
-  - 产物缺失: "❌ 错误：缺少必要的前置产物。请先完成[前置职位]的工作。"
+命令文件位置: .claude/commands/[职位缩写].md
+文件引用机制: @.claude/prompts/[prompt_file]
+权限配置: allowed-tools: [Read, Write, Edit]
 ```
 
-### 🔄 具体指令示例
+#### 🔧 标准命令文件模板
+```markdown
+---
+description: 启动{{ROLE_TITLE}}工作流程
+allowed-tools: Read, Write, Edit
+argument-hint: [可选参数]
+---
 
-#### 产品开发团队指令:
-- **`/pm`**: 启动需求分析 (PROJECT_IDLE → AGENT_产品经理_WORKING)
-- **`/des`**: 启动UI/UX设计 (AGENT_产品经理_DONE → AGENT_设计师_WORKING)
-- **`/dev`**: 启动前端开发 (AGENT_设计师_DONE → AGENT_开发工程师_WORKING)
+# 🎯 {{ROLE_TITLE}} Agent 启动
 
-#### 内容创作团队指令:
+## 执行前置检查
+1. **状态验证**: 检查当前项目状态是否允许启动{{ROLE_TITLE}}工作
+   - 如果是第一个职位: 需要 PROJECT_IDLE 或 PROJECT_REVISING
+   - 如果是后续职位: 需要前置职位的 AGENT_[前置职位]_DONE 状态
+
+2. **前置产物检查**: 验证必要的前置产物文件是否存在
+   - 检查: {{PREVIOUS_OUTPUT_FILE}}（如果不是第一个职位）
+
+## Agent召唤流程
+如果检查通过，执行以下步骤：
+
+1. **系统响应**: "🔥 正在召唤 {{ROLE_TITLE}} Agent..."
+2. **前置产物传递**: 如果有前置产物，显示"📂 将向其提交 {{PREVIOUS_OUTPUT_NAME}}"
+3. **Agent激活**: 读取并执行 @.claude/prompts/{{PROMPT_FILE}} 中定义的角色
+4. **状态更新**: 更新项目状态为 `AGENT_{{ROLE_TITLE}}_WORKING`
+
+## 错误处理
+- **状态不匹配**: "❌ 错误：当前阶段不能启动{{ROLE_TITLE}}工作。请先完成前置步骤。"
+- **产物缺失**: "❌ 错误：缺少必要的前置产物。请先完成{{PREVIOUS_ROLE}}的工作。"
+- **文件缺失**: "❌ 错误：找不到{{ROLE_TITLE}}的Agent定义文件。"
+```
+
+#### 🚀 动态命令生成逻辑
+```yaml
+# 系统创建时自动生成的命令文件
+for each role in TEAM_AGENTS:
+  command_file: ".claude/commands/{{role.command_alias}}.md"
+  template_variables:
+    ROLE_TITLE: {{role.role_title}}
+    PROMPT_FILE: {{role.prompt_file}}
+    PREVIOUS_ROLE: {{role.previous_role}}
+    PREVIOUS_OUTPUT_FILE: {{role.input_source}}
+    PREVIOUS_OUTPUT_NAME: {{role.input_artifact_name}}
+```
+
+### 🔄 具体指令示例与文件结构
+
+#### 产品开发团队 (完整Claude Code集成示例)
+
+**文件结构**:
+```
+.claude/
+├── commands/
+│   ├── pm.md       # /pm 命令定义
+│   ├── des.md      # /des 命令定义
+│   └── dev.md      # /dev 命令定义
+└── prompts/
+    ├── product_manager.md
+    ├── designer.md
+    └── developer.md
+```
+
+**命令执行流程**:
+- **`/pm`**: PROJECT_IDLE → 读取 @.claude/prompts/product_manager.md → AGENT_产品经理_WORKING
+- **`/des`**: AGENT_产品经理_DONE → 读取 @.claude/prompts/designer.md → AGENT_设计师_WORKING  
+- **`/dev`**: AGENT_设计师_DONE → 读取 @.claude/prompts/developer.md → AGENT_开发工程师_WORKING
+
+#### 内容创作团队 (动态生成示例)
+
+**COORDINATOR_CONFIG**:
+```yaml
+TEAM_AGENTS:
+  - role_1: "内容策划师"
+    command_alias: "plan"
+    prompt_file: "content_planner.md"
+  - role_2: "创意写手"
+    command_alias: "write" 
+    prompt_file: "content_writer.md"
+  - role_3: "编辑顾问"
+    command_alias: "review"
+    prompt_file: "content_editor.md"
+```
+
+**自动生成的命令**:
 - **`/plan`**: 启动内容策划 (PROJECT_IDLE → AGENT_内容策划师_WORKING)
 - **`/write`**: 启动内容创作 (AGENT_内容策划师_DONE → AGENT_创意写手_WORKING)
 - **`/review`**: 启动内容编辑 (AGENT_创意写手_DONE → AGENT_编辑顾问_WORKING)
 
-#### 市场营销团队指令:
-- **`/research`**: 启动市场调研 (PROJECT_IDLE → AGENT_市场研究员_WORKING)
-- **`/mkt`**: 启动营销策划 (AGENT_市场研究员_DONE → AGENT_营销策划师_WORKING)
-- **`/promo`**: 启动内容营销 (AGENT_营销策划师_DONE → AGENT_内容营销专员_WORKING)
+#### 🎯 命令别名生成规则
+
+```yaml
+命令别名生成逻辑:
+  product_manager: "pm"      # 取首字母
+  designer: "des"            # 取前缀
+  developer: "dev"           # 取前缀
+  content_planner: "plan"    # 取功能词
+  market_researcher: "research" # 取完整功能词
+  
+自定义别名支持:
+  TEAM_AGENTS:
+    - role_1: "分析洞察师"
+      command_alias: "ai"     # 用户自定义缩写
+      prompt_file: "analytics-insights.md"
+```
 
 ## 🎛️ 通用管理与控制指令
 
 ### 🔄 `/edit` - 智能修改模式
+
+**Claude Code命令文件**: `.claude/commands/edit.md`
+```markdown
+---
+description: 智能修改模式，允许重新执行任意已完成阶段
+allowed-tools: Read, Write, Edit
+---
+
+检查当前项目状态，如果有已完成的工作阶段，则提供修改选项菜单。
+```
+
+**执行逻辑**:
 - **适用状态**: 任何`AGENT_[职位]_DONE`状态
-- **执行流程**:
-  1. 分析当前项目状态和已完成的工作
-  2. 动态生成修改选项菜单：
-     ```
-     📝 **修改选项菜单**
-     
-     您可以选择修改以下任意阶段：
-     [根据当前进度动态生成选项列表]
-     ✅ [已完成职位1] - 输入 `/[职位1]` 重新开始该阶段
-     ✅ [已完成职位2] - 输入 `/[职位2]` 重新开始该阶段  
-     ⏸️ [当前职位] - 当前可以继续，或输入 `/[当前职位]` 重新开始
-     
-     选择您要修改的阶段，系统将从该阶段重新开始。
-     ```
-  3. 状态更新为 `PROJECT_REVISING`
-- **状态不匹配时**: "❌ 错误：项目尚未开始，暂无内容可供修改。"
+- **状态检查**: 扫描项目目录，识别已完成的产物文件
+- **动态菜单**: 根据COORDINATOR_CONFIG和实际完成情况生成选项
+
+**动态显示模板**:
+```
+📝 **修改选项菜单**
+
+您可以选择修改以下任意阶段：
+[扫描 WORKFLOW_SEQUENCE 和产物文件，动态生成]
+✅ {{COMPLETED_ROLE_1}} - 输入 `/{{COMMAND_1}}` 重新开始该阶段
+✅ {{COMPLETED_ROLE_2}} - 输入 `/{{COMMAND_2}}` 重新开始该阶段  
+⏸️ {{CURRENT_ROLE}} - 当前可以继续，或输入 `/{{CURRENT_COMMAND}}` 重新开始
+
+选择您要修改的阶段，系统将从该阶段重新开始。
+```
 
 ### 📊 `/status` - 智能项目状态报告
-- **适用状态**: 任何状态
-- **执行流程**:
-  1. 检查当前项目状态和已生成的产物文件
-  2. 根据COORDINATOR_CONFIG动态生成状态报告
-  3. 提供个性化的下一步操作指引
 
-- **动态显示模板**:
-  ```
-  📊 **[TEAM_NAME] 项目状态报告**
-  
-  **当前状态**: `[当前PROJECT_STATUS]`
-  **项目领域**: [PROJECT_DOMAIN]
-  **工作流程**: [WORKFLOW_SEQUENCE展示]
-  
-  **已完成产物**:
-  [根据TEAM_AGENTS配置和实际完成情况动态生成]
-  ✅ [产物文件名] - [职位]产出物 (如果存在)
-  ⏸️ [进行中的工作] - 当前 [职位] 正在工作
-  ⏭️ [待完成职位列表] - 尚未开始
-  
-  **下一步操作建议**:
-  [根据当前状态和工作流程智能生成建议]
-  • 输入 `/[下一个职位]` - 开始下一阶段工作
-  • 输入 `/edit` - 修改已完成的阶段
-  • 输入 `/help` - 查看所有可用指令
-  ```
+**Claude Code命令文件**: `.claude/commands/status.md`
+```markdown
+---
+description: 显示当前项目的详细状态报告和进度
+allowed-tools: Read
+---
+
+扫描项目状态，生成包含当前进度、已完成产物和下一步建议的状态报告。
+```
+
+**智能扫描机制**:
+```yaml
+状态识别:
+  1. 读取 COORDINATOR_CONFIG 获取团队配置
+  2. 扫描产物文件确定完成情况
+  3. 分析 WORKFLOW_SEQUENCE 确定当前位置
+  4. 生成个性化状态报告
+
+文件扫描逻辑:
+  for each agent in TEAM_AGENTS:
+    check_file: agent.output_artifact
+    if exists: status = "DONE"
+    else: determine based on workflow position
+```
+
+**动态状态报告模板**:
+```
+📊 **{{TEAM_NAME}} 项目状态报告**
+
+**当前状态**: `{{CURRENT_PROJECT_STATUS}}`
+**项目领域**: {{PROJECT_DOMAIN}}
+**工作流程**: {{WORKFLOW_SEQUENCE_VISUAL}}
+
+**已完成产物**:
+{{#each completed_artifacts}}
+✅ {{file_name}} - {{role_name}}产出物 ({{completion_time}})
+{{/each}}
+
+{{#if current_work}}
+⏸️ {{current_work.description}} - 当前 {{current_work.role}} 正在工作
+{{/if}}
+
+**待完成职位**:
+{{#each pending_roles}}
+⏭️ {{role_name}} - {{description}}
+{{/each}}
+
+**下一步操作建议**:
+{{#if next_command}}
+• 输入 `/{{next_command}}` - 开始{{next_role}}工作
+{{/if}}
+• 输入 `/edit` - 修改已完成的阶段
+• 输入 `/help` - 查看所有可用指令
+```
 
 ### ❓ `/help` - 动态帮助系统
-- **适用状态**: 任何状态
-- **执行流程**: 根据COORDINATOR_CONFIG动态生成帮助文档，展示当前团队的所有可用指令和功能
+
+**Claude Code命令文件**: `.claude/commands/help.md`
+```markdown
+---
+description: 显示当前AI团队的完整使用指南
+allowed-tools: Read
+---
+
+根据当前团队配置，动态生成包含所有可用指令、工作流程和使用技巧的帮助文档。
+```
+
+**智能帮助生成**:
+```yaml
+帮助内容生成:
+  1. 团队基本信息 (从 COORDINATOR_CONFIG 读取)
+  2. 可用指令列表 (动态扫描 .claude/commands/)
+  3. 工作流程说明 (基于 WORKFLOW_SEQUENCE)
+  4. 状态说明和错误处理
+  5. 最佳实践建议
+
+动态指令发现:
+  scan_directory: ".claude/commands/"
+  exclude: ["edit.md", "status.md", "help.md"]  # 通用指令
+  include: role_specific_commands  # 职位特定指令
+```
+
+**动态帮助模板**:
+```
+📖 **{{TEAM_NAME}} 使用指南**
+
+## 🎯 团队概览
+**领域**: {{PROJECT_DOMAIN}}
+**成员**: {{TEAM_MEMBERS_LIST}}
+**流程**: {{WORKFLOW_SEQUENCE}}
+
+## 🔧 可用指令
+### 职位专用指令
+{{#each role_commands}}
+**`/{{command}}`** - 启动{{role_name}}工作 ({{state_requirement}})
+{{/each}}
+
+### 通用管理指令
+**`/status`** - 查看项目状态报告
+**`/edit`** - 修改已完成的阶段  
+**`/help`** - 显示此帮助信息
+
+## 🚀 快速开始
+1. 输入 `/{{first_command}}` 开始{{first_role}}工作
+2. 按照工作流程依次执行各个阶段
+3. 使用 `/status` 随时查看进度
+4. 使用 `/edit` 修改任意已完成阶段
+
+## 💡 使用技巧
+- 每个阶段完成后会自动提示下一步操作
+- 支持自然语言描述需求，系统会引导使用正确指令
+- 所有产物文件都会保存，支持随时查看和修改
+```
 
 ### 🔧 `/mcp` - MCP服务器配置指导
-- **适用状态**: 任何状态
-- **执行流程**: 提供MCP服务器配置的详细指导和建议
+
+**Claude Code命令文件**: `.claude/commands/mcp.md`
+```markdown
+---
+description: MCP服务器配置指导和建议
+---
+
+提供针对当前团队特点的MCP服务器配置建议，增强AI团队的专业能力。
+```
+
+**动态建议生成**:
+```yaml
+配置建议逻辑:
+  基于 PROJECT_DOMAIN 提供定制化建议:
+    产品开发: filesystem, github, postgres
+    内容创作: brave-search, filesystem, github
+    市场营销: brave-search, google-analytics, social-media
+    SEO优化: brave-search, google-search-console, analytics
+    数据分析: postgres, sqlite, python-execution
+```
+
+---
+
+# [Claude Code官方机制完整集成]
+
+## 🚀 动态系统创建机制
+
+### 系统创建时的自动化流程
+
+当元系统执行 `/create` 命令创建新的AI团队时，会自动生成完整的Claude Code兼容结构：
+
+#### 1. **目录结构生成**
+```yaml
+系统创建流程:
+  1. 创建系统根目录: {{TEAM_NAME}}/
+  2. 生成协调者文件: {{TEAM_NAME}}/CLAUDE.md
+  3. 创建命令目录: {{TEAM_NAME}}/.claude/commands/
+  4. 创建提示词目录: {{TEAM_NAME}}/.claude/prompts/
+  5. 生成权限配置: {{TEAM_NAME}}/.claude/settings.local.json
+```
+
+#### 2. **命令文件自动生成**
+```yaml
+# 为每个Agent角色自动生成命令文件
+for each agent in TEAM_AGENTS:
+  生成文件: ".claude/commands/{{agent.command_alias}}.md"
+  模板填充: 
+    - ROLE_TITLE: {{agent.role_title}}
+    - PROMPT_FILE: {{agent.prompt_file}}
+    - STATE_REQUIREMENTS: {{workflow_position_logic}}
+    - ERROR_HANDLING: {{standard_error_templates}}
+
+# 生成通用管理命令
+生成文件: [edit.md, status.md, help.md]
+动态配置: 基于具体团队配置定制内容
+```
+
+#### 3. **权限配置优化**
+```json
+// 自动生成的 settings.local.json
+{
+  "permissions": {
+    "allow": [
+      "Read", "Write", "Edit", "MultiEdit",
+      "Bash(mkdir:*)", "Bash(ls:*)", "Bash(find:*)"
+    ],
+    "ask": ["Bash"],
+    "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{"type": "command", "command": "echo '📝 {{TEAM_NAME}} 正在处理文件...' >&2"}]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{"type": "command", "command": "echo '✅ {{TEAM_NAME}} 文件操作完成！' >&2"}]
+      }
+    ]
+  }
+}
+```
+
+## 🔄 运行时集成机制
+
+### `/run` 命令的完整实现
+
+当用户执行 `/run {{TEAM_NAME}}` 时：
+
+#### 1. **系统验证与加载**
+```yaml
+验证流程:
+  1. 检查系统目录是否存在
+  2. 验证 CLAUDE.md 配置文件
+  3. 检查 .claude/commands/ 目录完整性
+  4. 验证 Agent 提示词文件存在
+
+加载流程:
+  1. 读取 @{{TEAM_NAME}}/CLAUDE.md 配置
+  2. 解析 COORDINATOR_CONFIG 参数
+  3. 初始化团队状态管理
+  4. 激活协调者角色模式
+```
+
+#### 2. **动态指令注册**
+```yaml
+指令系统激活:
+  1. 扫描 {{TEAM_NAME}}/.claude/commands/ 目录
+  2. 动态注册所有可用命令
+  3. 建立状态与指令的映射关系
+  4. 激活错误处理和验证机制
+
+运行时行为:
+  - 只响应当前团队的专用指令
+  - 严格按照 WORKFLOW_SEQUENCE 执行
+  - 利用文件引用机制精确调用Agent
+  - 通过Hook机制提供实时反馈
+```
+
+#### 3. **文件引用机制集成**
+```yaml
+Agent召唤方式:
+  标准格式: @{{TEAM_NAME}}/.claude/prompts/{{AGENT_FILE}}
+  
+  召唤流程:
+    1. 状态验证通过
+    2. 输出: "🔥 正在召唤 {{ROLE_TITLE}} Agent..."
+    3. 文件引用: @{{TEAM_NAME}}/.claude/prompts/{{PROMPT_FILE}}
+    4. 角色激活: 完全切换到Agent身份
+    5. 状态更新: AGENT_{{ROLE_TITLE}}_WORKING
+
+产物管理:
+  输入来源: 前置Agent的产物文件
+  输出目标: 当前Agent的指定产物文件
+  传递机制: 通过文件系统无缝交接
+```
+
+## 🎯 最佳实践整合
+
+### Claude Code官方机制利用
+
+1. **充分利用斜杠命令系统**: 所有交互都通过官方斜杠命令进行
+2. **文件引用机制精确性**: 使用 @ 语法精确引用Agent定义
+3. **权限系统安全性**: 细粒度权限控制确保操作安全
+4. **Hook机制增强体验**: 提供实时操作反馈和状态提示
+5. **状态管理严谨性**: 结合Claude Code的状态验证机制
 
 **标准回复模板**:
 > **🔧 MCP服务器配置指南**

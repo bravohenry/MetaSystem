@@ -1,7 +1,42 @@
 {
   "permissions": {
-    "additionalDirectories": [
-      "/Users/henry/PARA"
+    "allow": [
+      "Read",
+      "Write", 
+      "Edit",
+      "MultiEdit",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)"
+    ],
+    "ask": [
+      "Bash"
+    ],
+    "deny": []
+  },
+  "additionalDirectories": [],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|MultiEdit|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📝 {{TEAM_NAME}} 正在处理文件...' >&2"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|MultiEdit|Edit", 
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ {{TEAM_NAME}} 文件操作完成！' >&2"
+          }
+        ]
+      }
     ]
   }
 }
