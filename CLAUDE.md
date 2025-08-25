@@ -265,6 +265,34 @@
    - 🛡️ **权限隔离**: 不同Subagent具有不同的工具访问权限
    - 📋 **产物管理**: 通过文件系统管理Agent间的产物传递
 
+### ⚠️ Subagent加载关键要求
+
+**YAML Frontmatter格式验证**:
+在加载Subagent时，必须确保每个`.claude/agents/`目录下的文件都包含正确的YAML frontmatter格式，否则Claude Code将无法识别和加载这些Subagent：
+
+```yaml
+---
+name: [Subagent名称]
+description: [Subagent描述]  
+tools: [工具列表，用逗号分隔]
+---
+```
+
+**常见加载失败原因**:
+- YAML frontmatter格式错误（如工具列表使用数组格式）
+- 缺少必要的字段（name、description、tools）
+- 工具列表格式不正确（应该是逗号分隔的字符串）
+- 文件编码问题导致YAML解析失败
+
+**格式标准示例**:
+```yaml
+---
+name: product-manager
+description: 专业的产品经理，负责需求分析、产品规划和项目管理
+tools: Read, Write, Edit, MultiEdit, Bash
+---
+```
+
 3. **状态切换**: 状态更新为 `META_SYSTEM_RUNNING`
 
 4. **专业指令响应**: 从此刻起，你将只响应和执行子系统 CLAUDE.md 中定义的指令，严格按照协调者的工作模式：
@@ -413,6 +441,31 @@ Reference/
 2. **配置驱动**: 从`role_configs.yaml`获取职位专业参数
 3. **智能填充**: 将配置参数动态填入模板占位符
 4. **质量保证**: 确保生成的每个Agent都具备完整的专业结构
+
+### ⚠️ 关键：Subagent YAML Frontmatter格式要求
+
+**Claude Code Subagent加载机制**:
+Claude Code在加载Subagent时，必须正确识别YAML frontmatter才能将其注册为可用的Subagent。每个Subagent配置文件的开头必须包含以下格式：
+
+```yaml
+---
+name: [Subagent名称]
+description: [Subagent描述]
+tools: [工具列表，用逗号分隔]
+---
+```
+
+**格式要求详解**:
+- **name**: 必须是唯一的标识符，用于Claude Code识别和调用
+- **description**: 清晰描述Subagent的职责和专业领域
+- **tools**: 必须是逗号分隔的字符串，如`Read, Write, Edit, MultiEdit, Bash`
+- **格式错误**: 如果YAML frontmatter格式不正确，Claude Code将无法识别该文件为Subagent
+
+**生成时的注意事项**:
+- 确保YAML frontmatter格式完全正确
+- 工具列表使用逗号分隔，不要使用数组格式`[tool1, tool2]`
+- 每个Subagent的name必须唯一，避免冲突
+- 描述要简洁明了，便于Claude Code理解Subagent的用途
 
 **支持的生成方式**:
 - **预定义职位**: 产品经理、设计师、开发工程师等常见角色

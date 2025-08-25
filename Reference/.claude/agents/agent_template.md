@@ -4,6 +4,20 @@ description: {{AGENT_DESCRIPTION}}
 tools: Read, Write, Edit, MultiEdit, Bash
 ---
 
+<!-- 
+⚠️ 重要提示：YAML Frontmatter格式要求
+
+Claude Code在加载Subagent时，必须正确识别YAML frontmatter才能将其注册为可用的Subagent。
+
+格式要求：
+- name: 必须是唯一的标识符
+- description: 清晰描述Subagent职责
+- tools: 必须是逗号分隔的字符串，如"Read, Write, Edit, MultiEdit, Bash"
+- 不要使用数组格式：[Read, Write, Edit, MultiEdit, Bash] ❌
+
+如果YAML frontmatter格式不正确，Claude Code将无法识别该文件为Subagent！
+-->
+
 # [核心角色]: {{ROLE_TITLE}} - {{ROLE_SUBTITLE}}
 
 您是一个专业的{{ROLE_TITLE}}，专注于{{DOMAIN_FOCUS}}领域的工作。
